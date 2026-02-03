@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preço do Bitcoin</title>
+    <!-- Fonte simples -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Fundo preto simples, sem firulas */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #000000; /* Preto puro */
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* Título sem efeitos */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #f39c12;
+            margin-bottom: 20px;
+        }
+
+        /* Container simples */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Preço sem sombras ou animações */
+        #preco {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #01ff6b;
+            background: #333333; /* Cinza escuro simples */
+            padding: 15px 30px;
+            border-radius: 5px; /* Bordas levemente arredondadas */
+            text-align: center;
+        }
+
+        /* Controles básicos */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        select, button {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            padding: 10px;
+            border: 1px solid #666; /* Borda simples */
+            border-radius: 3px; /* Pouco arredondado */
+            background: #222222; /* Cinza escuro */
+            color: #ffffff;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        button {
+            cursor: pointer;
+            background: #f39c12;
+            color: #000;
+            font-weight: 700;
+        }
+
+        button:hover {
+            background: #e67e22;
+        }
+
+        /* Footer simples */
+        footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #999;
+            text-align: center;
+        }
+
+        /* Para celular */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            #preco {
+                font-size: 2rem;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Preço do Bitcoin em diferentes moedas</h1>
+    <div class="container">
+        <div id="preco">Carregando...</div>
+        
+        <div class="controls">
+            <label for="moeda">Moeda:</label>
+            <select id="moeda">
+                <option value="usd">USD</option>
+                <option value="eur">EUR</option>
+                <option value="brl">BRL</option>
+            </select>
+            
+            <button id="atualizar">Atualizar</button>
+        </div>
+    </div>
+
+    <script>
+        let precoAtual = 0;
+        let moedaAtual = 'usd';
+
+        async function pegarBitcoin(moeda = moedaAtual) {
+            try {
+                const resposta = await fetch(
+                    `https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${moeda}&include_24hr_change=true`
+                );
+                const dados = await resposta.json();
+                precoAtual = dados.bitcoin[moeda];
+                const variacao = dados.bitcoin[`${moeda}_24h_change`];
+                const precoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: moeda.toUpperCase() }).format(precoAtual);
+                const variacaoFormatada = variacao ? ` (${variacao.toFixed(2)}%)` : '';
+                document.getElementById("preco").innerText = "₿ " + precoFormatado + variacaoFormatada;
+            } catch (erro) {
+                document.getElementById("preco").innerText = "Erro.";
+                console.error(erro);
+            }
+        }
+
+        document.getElementById("moeda").addEventListener("change", (e) => {
+            moedaAtual = e.target.value;
+            pegarBitcoin(moedaAtual);
+        });
+
+        document.getElementById("atualizar").addEventListener("click", () => pegarBitcoin(moedaAtual));
+
+        pegarBitcoin();
+        setInterval(() => pegarBitcoin(moedaAtual), 60000);
+    </script>
+</body>
+</html>
